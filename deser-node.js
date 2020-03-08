@@ -1,11 +1,17 @@
 /**
-* This script provides a simple cli to generate payloads for:
-* - node-serialize
-* - funcster
-* - cryo
-*
-* It's not meant to be a complete tool, but just a proof of concept
-**/
+# ==========================================================================================
+# deser-node v0.4
+# Date: 08-03-2020
+# Author: d3adc0de
+# ==========================================================================================
+# This script provides a simple cli to generate payloads for:
+# 
+# - node-serialize
+# - funcster
+# - cryo
+#
+# PoC Version - Will be further developed soon
+*/
 var fs = require('fs');
 
 var argv = require('yargs')
