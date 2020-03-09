@@ -18,15 +18,16 @@ Usage: deser-node.js -f [file] [options]
 
 Options:
   --version            Show version number                             [boolean]
-  -f, --file           Input file                                     [required]
+  -f, --file           Input file
   -m, --mode           Operational mode, may be serialize or deserialize
                     [choices: "serialize", "deserialize"] [default: "serialize"]
   -s, --serializer     The serializer module to use
-                                 [choices: "ns", "fstr", "cryo"] [default: "ns"]
+                                      [required] [choices: "ns", "fstr", "cryo"]
   -v, --vector         The vector is command exe or reverse shell
                                                       [choices: "rce", "rshell"]
   -c, --command        The command to execute (-v rce must be used)
-  -e                   Charencode the payload (not implemented yet)
+  -e, --encode         Charencode the payload (not implemented yet)
+                              [choices: "charcode", "b64"] [default: "charcode"]
   -H, --lhost          Local listener IP (-v rshell must be used)
   -P, --lport          Local listener PORT (-v rshell must be used)
   -t, --target         Target machine OS, may be Win or Linux
@@ -44,8 +45,8 @@ Options:
 ## TODO:
 
 * Implement encoding schemes:
-    - base64
-    - charcode encoding
+    - ~~base64~~
+    - ~~charcode encoding~~
     - others
 
 #### References
