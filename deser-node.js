@@ -15,7 +15,7 @@
 var fs = require('fs');
 
 var argv = require('yargs')
-    .usage('Usage: $0 -f [file] [options]')
+    .usage('Usage: node $0 -s [serializer] [options]')
     .alias('f', 'file')
     .alias('m', 'mode')
     .alias('s', 'serializer')
@@ -35,7 +35,6 @@ var argv = require('yargs')
     .default('t', 'windows')
 	.default('p', 'toString')
     .default('m', 'serialize')
-    .default('e', 'charcode')
 	.describe('f','Input file')
     .describe('m','Operational mode, may be serialize or deserialize')
     .describe('s','The serializer module to use')

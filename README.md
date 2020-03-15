@@ -14,7 +14,7 @@ Using deser-node is very straightforward::
 
 ```
 $ node deser-node.js --help
-Usage: deser-node.js -f [file] [options]
+Usage: node deser-node.js -s [serializer] [options]
 
 Options:
   --version            Show version number                             [boolean]
@@ -27,7 +27,7 @@ Options:
                                                       [choices: "rce", "rshell"]
   -c, --command        The command to execute (-v rce must be used)
   -e, --encode         Charencode the payload (not implemented yet)
-                              [choices: "charcode", "b64"] [default: "charcode"]
+                                                    [choices: "charcode", "b64"]
   -H, --lhost          Local listener IP (-v rshell must be used)
   -P, --lport          Local listener PORT (-v rshell must be used)
   -t, --target         Target machine OS, may be Win or Linux
