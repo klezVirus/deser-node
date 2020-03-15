@@ -6,7 +6,7 @@ Deser-node is a script to automatically generate serialized payloads for NodeJS 
 * funcster
 * cryo
 
-The generated payloads are designed to operate in standard RCE mode, that allows to execute system commands on the target, and in reverse-shell (rshell) mode, which is designed to initiate a non-blocking reverse conection from the target to an attacker controller machine, giving the attacker shell access on the target machine.
+The generated payloads are designed to operate in standard RCE mode, that allows to execute system commands on the target, and in reverse-shell (rshell) mode, which is designed to obtain shell access using a non-blocking reverse TCP connection from the target to an attacker controlled machine.
 
 ## Usage
 
