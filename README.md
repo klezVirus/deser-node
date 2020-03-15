@@ -42,6 +42,17 @@ Options:
 
 * [The Big Problem of Serialisation](https://klezvirus.github.io/The_Big_Problem_of_Serialisation/)
 
+## Requirements
+
+In order to use **deser-node**, the following node modules must be installed:
+
+```
+npm install yargs
+npm install node-serialize
+npm install funcster
+npm install cryo
+```
+
 ## TODO:
 
 * Implement encoding schemes:

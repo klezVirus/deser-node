@@ -1,13 +1,12 @@
 {
-  "name": "serialization-test",
+  "name": "deser-node",
   "version": "1.0.0",
-  "description": "A script to test deserialization issues",
-  "main": "serialization-test.js",
+  "description": "A script to generate payloads to exploit deserialization issues",
+  "main": "deser-node.js",
   "dependencies": {
     "cryo": "0.0.6",
     "funcster": "^0.0.5",
     "node-serialize": "^0.0.4",
-    "serialize-to-js": "^3.1.1",
     "yargs": "^15.1.0"
   },
   "devDependencies": {},
