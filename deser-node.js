@@ -50,6 +50,16 @@ var argv = require('yargs')
 
 var payload;
 
+// Validate IP and PORT
+function isValidIP(ipaddress) {
+	return (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress));
+}
+
+// Validate IP and PORT
+function isValidPort(port) {
+	return (/^\d{1,5}$/.test(port) && parseInt(port) > 0 && parseInt(port) <= 65535);
+}
+
 // Charcode Encode data
 function charencode(data){
 	var x = new Array();
@@ -113,7 +123,10 @@ if (argv.vector == "rshell" && argv.serializer != "cryo") {
     if (typeof argv.lport == 'undefined' || typeof argv.lhost == 'undefined') {
         console.log("[-] RShell vector requires LHOST and LPORT to be specified");
         process.exit();
-    }
+    }else if(!isValidIP(argv.lhost) || !isValidPort(argv.lport)){
+		console.log("[-] Invalid LHOST or LPORT");
+        process.exit();
+	}
     payload = {
         rce: function() {
             var net = require('net');
